@@ -39,6 +39,14 @@ for ((t = 0; t < LIMIT; t += 5)); do
 done
 
 kill $pid 2>/dev/null; wait $pid 2>/dev/null
+
+# In GitHub Actions: Ergebnis der Gaeste als Hinweis an den Lauf haengen
+if [ -n "${GITHUB_ACTIONS:-}" ]; then
+  msg=$(sed 's/\x1b\[[0-9;]*m//g' "$LOG" | tr -d '\r' \
+        | grep -a -E "SELFTEST|Ergebnis|UDP  #|TCP  |antwortet" | head -40 \
+        | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
+  [ -n "$msg" ] && echo "::notice title=Selbsttest::$msg"
+fi
 echo "----- Ende der Ausgabe -----"
 tail -n 60 "$LOG" | tr -d '\r'
 exit $result
