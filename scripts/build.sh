@@ -83,12 +83,15 @@ step_busybox() {
   say "Busybox $BUSYBOX_TAG (statisch)"
   local o="$OBJ/busybox"
   mkdir -p "$o"
-  if [ ! -f "$o/.config" ]; then
+  if [ ! -f "$o/.sock-config-ok" ]; then
     make -C "$SRC/busybox" O="$o" defconfig >/dev/null
     # statisch; tc baut mit neuen Kernel-Headern nicht mehr
     sed -i -e 's/^# CONFIG_STATIC is not set/CONFIG_STATIC=y/' \
            -e 's/^CONFIG_TC=y/# CONFIG_TC is not set/' "$o/.config"
-    yes "" | make -C "$o" oldconfig >/dev/null
+    # "yes" endet mit SIGPIPE, sobald make fertig ist: das ist kein Fehler
+    (yes "" || true) | make -C "$o" oldconfig >/dev/null
+    grep -q '^CONFIG_STATIC=y' "$o/.config" || { echo "busybox: STATIC fehlt"; exit 1; }
+    touch "$o/.sock-config-ok"
   fi
   make -C "$o" -j"$JOBS"
   rm -rf "$o/_install"

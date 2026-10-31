@@ -37,22 +37,22 @@ jobs:
             work-${{ hashFiles('scripts/versions.sh') }}-
 
       - name: Quellen holen
-        run: scripts/build.sh fetch
+        run: scripts/ci-step.sh fetch scripts/build.sh fetch
 
       - name: Fiasco bauen
-        run: scripts/build.sh fiasco
+        run: scripts/ci-step.sh fiasco scripts/build.sh fiasco
 
       - name: L4Re bauen
-        run: scripts/build.sh l4re
+        run: scripts/ci-step.sh l4re scripts/build.sh l4re
 
       - name: Linux bauen
-        run: scripts/build.sh linux
+        run: scripts/ci-step.sh linux scripts/build.sh linux
 
       - name: Busybox und Ramdisk bauen
-        run: scripts/build.sh busybox ramdisk
+        run: scripts/ci-step.sh busybox scripts/build.sh busybox ramdisk
 
       - name: Image bauen
-        run: scripts/build.sh image
+        run: scripts/ci-step.sh image scripts/build.sh image
 
       - name: Zwischenstand im Cache sichern
         if: always()
@@ -64,7 +64,7 @@ jobs:
           key: work-${{ hashFiles('scripts/versions.sh') }}-${{ github.run_id }}
 
       - name: Selbsttest in QEMU
-        run: scripts/selftest.sh work/out/bootstrap_sock.elf 1500
+        run: scripts/ci-step.sh selftest scripts/selftest.sh work/out/bootstrap_sock.elf 1500
 
       - name: Ergebnis aufheben
         if: always()
