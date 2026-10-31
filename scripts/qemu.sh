@@ -19,5 +19,6 @@ exec qemu-system-aarch64 \
   -smp "${QEMU_SMP:-2}" \
   -m 1024 \
   -nographic \
+  -nic none \
   -kernel "$IMG" \
   ${QEMU_EXTRA:-}
