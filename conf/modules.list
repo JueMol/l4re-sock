@@ -1,6 +1,6 @@
 # l4re-sock: zwei Gaeste mit uvmm, verbunden ueber l4vio_net_p2p
 entry sock
-kernel fiasco
+kernel fiasco -serial_input
 roottask moe rom/sock.ned
 module l4re
 module ned
