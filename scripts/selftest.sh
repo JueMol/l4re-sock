@@ -15,11 +15,18 @@ echo "Selbsttest mit $IMG (hoechstens $LIMIT s), Ausgabe: $LOG"
 "$REPO/scripts/qemu.sh" "$IMG" </dev/null >"$LOG" 2>&1 &
 pid=$!
 
+STALL="${STALL:-300}"     # so lange ohne neue Ausgabe: haengt
 result=1
+last_size=-1; still=0
 for ((t = 0; t < LIMIT; t += 5)); do
   sleep 5
   if ! kill -0 $pid 2>/dev/null; then
     echo "QEMU hat sich beendet"; break
+  fi
+  size=$(stat -c %s "$LOG")
+  if [ "$size" = "$last_size" ]; then still=$((still + 5)); else still=0; last_size=$size; fi
+  if [ $still -ge "$STALL" ]; then
+    echo "Seit $STALL s keine neue Ausgabe: das System haengt"; break
   fi
   ok=$(grep -a -c "SELFTEST OK" "$LOG")
   if grep -a -q "SELFTEST FEHLER" "$LOG"; then

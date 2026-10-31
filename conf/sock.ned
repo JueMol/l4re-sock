@@ -27,6 +27,8 @@ for id = 1, 2 do
     kernel   = "rom/Image",
     rd       = "rom/sock-rd.cpio.gz",
     fdt      = "rom/virt-arm_virt-64.dtb",
-    bootargs = "console=ttyAMA0 earlycon rdinit=/init sock_id=" .. id,
+    -- PL011 von uvmm liegt im Gast bei 0x12000 (l4vmm-Bereich ab 0x10000)
+    bootargs = "console=ttyAMA0 earlycon=pl011,0x12000 loglevel=8 "
+            .. "rdinit=/init sock_id=" .. id,
   };
 end
