@@ -70,6 +70,17 @@ Kabel dazwischen.
 | Strg+E, dann 0 | Ausgaben aller Abteile gemischt (nur lesen) |
 | Strg+A, dann X | QEMU beenden |
 
+> **Strg+E in VS Code:** VS Code benutzt Strg+E selbst („Gehe zu Datei“)
+> und gibt die Taste sonst nicht an das Terminal weiter. Einmalig
+> einstellen: Zahnrad unten links → *Settings* → nach
+> `sendKeybindingsToShell` suchen → Häkchen setzen. Gilt sofort.
+>
+> Im **Browser** schnappt sich manchmal der Browser selbst Strg+E (Chrome:
+> Suche in der Adressleiste). Dann den Codespace in der VS-Code-Desktop-App
+> öffnen (GitHub → Code → Codespaces → „…“ → *Open in Visual Studio Code*)
+> oder ohne Strg+E arbeiten: Enter drücken und am Prompt `cons>`
+> `connect vm1` bzw. `connect vm2` eingeben (`help` zeigt alle Befehle).
+
 In einem Gast (z. B. vm1):
 
 ```
@@ -189,7 +200,9 @@ l4re-sock/
 | `run.sh`: Download fehlgeschlagen | noch kein grüner Build auf `main` | in GitHub unter *Actions* nachsehen |
 | Nach dem Start lange nichts | ohne KVM ist QEMU langsam, kleiner Codespace | etwas warten; bleibt es stehen, `QEMU_SMP=2` prüfen (jeder Gast braucht eine eigene CPU) |
 | Tastatur reagiert nicht | Konsole „alle“ (Strg+E 0) nimmt keine Eingabe | Strg+E 1 oder 2 |
-| QEMU lässt sich nicht beenden | Strg+C geht an den Gast | Strg+A, dann X |
+| QEMU lässt sich nicht beenden | Strg+C geht an den Gast | Strg+A, dann X; hilft nichts: Terminal schließen (Mülleimer) |
+| Strg+E öffnet ein Menü in VS Code | VS Code fängt die Taste ab | `sendKeybindingsToShell` einschalten (siehe [Bedienung](#bedienung)) |
+| Nach Strg+E passiert nichts, keine Taste kommt an | Image ohne Tastatureingabe (vor dem 31.10.) | `scripts/run.sh --neu` lädt das aktuelle Image |
 
 ---
 
