@@ -25,7 +25,7 @@ command -v qemu-system-aarch64 >/dev/null || {
   echo "qemu-system-aarch64 fehlt: sudo apt-get install -y qemu-system-arm"; exit 1; }
 
 echo
-echo "Start dauert ohne KVM etwas (bis die Gaeste melden: SELFTEST OK)."
+echo "Warten, bis beide Gaeste SELFTEST OK melden (ohne KVM einige Sekunden bis Minuten)."
 echo "Strg+E 1 / Strg+E 2: Konsole vm1 / vm2.  Strg+A X: beenden."
 echo
 exec "$REPO/scripts/qemu.sh" "$IMG"

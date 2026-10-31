@@ -58,7 +58,8 @@ Kabel dazwischen.
    ```
 
    Ohne KVM bildet QEMU alles in Software nach, auch die Virtualisierung.
-   Der Start dauert deshalb ein paar Minuten.
+   In GitHub Actions dauert es trotzdem nur etwa 10 Sekunden bis
+   `SELFTEST OK`; auf einem kleinen Codespace kann es etwas länger sein.
 
 ## Bedienung
 
@@ -80,10 +81,11 @@ Ausgabe, Beispiel:
 
 ```
 Ping-Pong mit 192.168.1.2 Port 7777: 5 x UDP, 5 x TCP, je 64 Bytes
-UDP  #1       64 Bytes     3.912 ms
+UDP  #1       64 Bytes     4.650 ms
+UDP  #2       64 Bytes     8.367 ms
 ...
-TCP  verbunden               4.120 ms
-TCP  #1       64 Bytes     3.507 ms
+TCP  verbunden              21.642 ms
+TCP  #1       64 Bytes    27.144 ms
 ...
 Ergebnis: UDP 5/5, TCP 5/5 ok
 ```
@@ -110,6 +112,10 @@ Auch Busybox-Werkzeuge gehen: `ping 192.168.1.2`, `ip addr`, `nc`.
 | 3 | ned | startet `cons` (Konsole), `l4vio_net_p2p` (Netz) und zweimal `uvmm` |
 | 4 | uvmm | bootet je einen Linux-Kernel (`Image`) mit der Ramdisk |
 | 5 | `/init` im Gast | liest `sock_id` aus der Kernel-Kommandozeile, setzt 192.168.1.1 bzw. .2, startet `sockpp server` und den Selbsttest, öffnet eine Shell |
+
+Jeder Gast bekommt genau eine CPU: vm1 läuft auf CPU 0, vm2 auf CPU 1
+(`cpus` in `conf/sock.ned`, QEMU mit `-smp 2`). Mit mehreren virtuellen
+CPUs pro Gast blieb unter QEMU ohne KVM eine davon hängen.
 
 Die Verbindung zwischen den Gästen ist ein **virtio-Kabel** mit zwei Enden:
 `l4vio_net_p2p` kopiert Pakete zwischen den Ringpuffern der beiden Gäste,
@@ -181,10 +187,9 @@ l4re-sock/
 | Symptom | Ursache | Lösung |
 |---|---|---|
 | `run.sh`: Download fehlgeschlagen | noch kein grüner Build auf `main` | in GitHub unter *Actions* nachsehen |
-| Nach dem Start lange nichts | ohne KVM ist QEMU langsam | ein paar Minuten warten |
+| Nach dem Start lange nichts | ohne KVM ist QEMU langsam, kleiner Codespace | etwas warten; bleibt es stehen, `QEMU_SMP=2` prüfen (jeder Gast braucht eine eigene CPU) |
 | Tastatur reagiert nicht | Konsole „alle“ (Strg+E 0) nimmt keine Eingabe | Strg+E 1 oder 2 |
 | QEMU lässt sich nicht beenden | Strg+C geht an den Gast | Strg+A, dann X |
-| Codespace hat nur 2 Kerne | kleiner Maschinentyp | Maschinentyp mit 4 Kernen wählen, oder `QEMU_SMP=1 scripts/run.sh` |
 
 ---
 
