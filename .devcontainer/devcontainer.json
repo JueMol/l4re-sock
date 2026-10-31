@@ -1,0 +1,12 @@
+{
+  "name": "l4re-sock",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "hostRequirements": {
+    "cpus": 4
+  },
+  "postCreateCommand": "scripts/deps.sh run",
+  "postAttachCommand": "echo 'Starten: scripts/run.sh   (Strg+E 1 / Strg+E 2: Gast wechseln, Strg+A X: beenden)'"
+}

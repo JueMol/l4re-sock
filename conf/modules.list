@@ -1,0 +1,14 @@
+# l4re-sock: zwei Gaeste mit uvmm, verbunden ueber l4vio_net_p2p
+entry sock
+kernel fiasco
+roottask moe rom/sock.ned
+module l4re
+module ned
+module cons
+module uvmm
+module l4vio_net_p2p
+module vmm.lua
+module sock.ned
+module virt-arm_virt-64.dtb
+module Image
+module sock-rd.cpio.gz

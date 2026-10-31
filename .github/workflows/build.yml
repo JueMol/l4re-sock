@@ -1,0 +1,87 @@
+name: Bauen und testen
+
+# Baut Fiasco, L4Re, Gast-Kernel und Ramdisk fuer arm64, startet das Image
+# in QEMU und wartet, bis beide Gaeste "SELFTEST OK" melden.
+# Auf main wird das Image als Release "latest" veroeffentlicht; von dort
+# holt es scripts/run.sh im Codespace.
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pakete installieren
+        run: scripts/deps.sh
+
+      - name: Zwischenstand aus dem Cache holen
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            work/src
+            work/obj
+          key: work-${{ hashFiles('scripts/versions.sh') }}-${{ github.run_id }}
+          restore-keys: |
+            work-${{ hashFiles('scripts/versions.sh') }}-
+
+      - name: Quellen holen
+        run: scripts/build.sh fetch
+
+      - name: Fiasco bauen
+        run: scripts/build.sh fiasco
+
+      - name: L4Re bauen
+        run: scripts/build.sh l4re
+
+      - name: Linux bauen
+        run: scripts/build.sh linux
+
+      - name: Busybox und Ramdisk bauen
+        run: scripts/build.sh busybox ramdisk
+
+      - name: Image bauen
+        run: scripts/build.sh image
+
+      - name: Zwischenstand im Cache sichern
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            work/src
+            work/obj
+          key: work-${{ hashFiles('scripts/versions.sh') }}-${{ github.run_id }}
+
+      - name: Selbsttest in QEMU
+        run: scripts/selftest.sh work/out/bootstrap_sock.elf 1500
+
+      - name: Ergebnis aufheben
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: l4re-sock
+          path: |
+            work/out/bootstrap_sock.elf
+            work/out/selftest.log
+          if-no-files-found: ignore
+
+      - name: Als Release "latest" veroeffentlichen
+        if: github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view latest >/dev/null 2>&1 || \
+            gh release create latest --title "Neuester Stand" \
+              --notes "Wird bei jedem erfolgreichen Build auf main ersetzt."
+          gh release upload latest work/out/bootstrap_sock.elf --clobber

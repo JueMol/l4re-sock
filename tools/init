@@ -1,0 +1,31 @@
+#!/bin/sh
+# Start eines Gastes (rdinit=/init). Liest seine Nummer aus der
+# Kernel-Kommandozeile (sock_id=1 oder 2), richtet eth0 ein, startet den
+# Echo-Dienst, testet einmal die Verbindung zum anderen Gast und oeffnet
+# dann eine Shell auf der Konsole.
+
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev 2>/dev/null
+mkdir -p /tmp && mount -t tmpfs tmpfs /tmp
+
+id=$(sed -n 's/.*sock_id=\([0-9]*\).*/\1/p' /proc/cmdline)
+[ -n "$id" ] || id=1
+peer=$((3 - id))
+
+hostname "vm$id"
+ip link set lo up
+ip addr add 192.168.1.$id/24 dev eth0
+ip link set eth0 up
+
+echo
+echo "=== vm$id: 192.168.1.$id, anderer Gast: 192.168.1.$peer ==="
+sockpp server 2>/dev/null &
+
+# Einmaliger Test beim Start. Laeuft im Hintergrund, damit die Shell sofort
+# da ist; das Ergebnis erscheint auf der Konsole.
+( sockpp selftest 192.168.1.$peer -w 600 | sed "s/^/[vm$id] /" ) &
+
+echo "Ping-Pong von Hand: sockpp ping 192.168.1.$peer"
+export PS1="vm$id # "
+exec setsid cttyhack /bin/sh
